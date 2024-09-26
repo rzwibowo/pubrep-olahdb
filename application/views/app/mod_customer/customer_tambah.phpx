@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+<?php include(APPPATH . 'views/app/main-head.php'); ?>
+
+<body>
+
+    <!-- ===============================================-->
+    <!--    Main Content-->
+    <!-- ===============================================-->
+    <main class="main" id="top">
+        <div class="container-fluid" data-layout="container">
+            <?php include(APPPATH . 'views/app/main-menu.php'); ?>
+
+            <div class="content">
+                <?php include(APPPATH . 'views/app/main-navbar.php'); ?>
+
+                <div class="card mb-3">
+                    <div class="bg-holder d-none d-lg-block bg-card" style="background-image:url(<?php echo base_url(); ?>/assets/img/illustrations/corner-2.png);">
+                    </div>
+                    <div class="card-body">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-md">
+                                <h5 class="mb-2 mb-md-0">Tambah Customer</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <?php
+                $attributes = array('id' => 'form-customer');
+                echo form_open("master_customer/customer_tambah", $attributes);
+                ?>
+                <div class="row no-gutters">
+                    <div class="col-lg-6 pr-lg-2">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Data Customer</h5>
+                            </div>
+                            <div class="card-body bg-light">
+                                <div class="form-row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <label for="nama_customer">Nama</label>
+                                            <input class="form-control" id="nama_customer" name="nama_customer" type="text" placeholder="Username" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="telp_customer">Telp</label>
+                                            <input class="form-control" id="telp_customer" name="telp_customer" type="text" placeholder="Telepon" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="alamat_customer">Alamat</label>
+                                            <input class="form-control" id="alamat_customer" name="alamat_customer" type="text" placeholder="Alamat" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="kodepos">Kode Pos</label>
+                                            <input class="form-control" id="kodepos" name="kodepos" type="text" placeholder="Kode Pos" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="nama_level">Propinsi</label>
+                                            <select class="form-control" id="id_propinsi" name="id_propinsi" required>
+                                                <?php
+                                                foreach ($propinsi as $rows) {
+                                                    echo "<option value='$rows[id_propinsi]'>$rows[nama_propinsi]</option>";
+                                                }
+                                                ?>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="nama_level">Kota</label>
+                                            <select class="form-control" id="id_kota" name="id_kota" required>
+                                                
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="bg-holder d-none d-lg-block bg-card" style="background-image:url(<?php echo base_url(); ?>/assets/img/illustrations/corner-3.png);">
+                    </div>
+                    <div class="card-body">
+                        <div class="row justify-content-between align-items-center">
+                            <div class="col-md">
+
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" name="submit_customer" class="btn btn-falcon-default btn-sm mr-2">Simpan</button>
+                                <a href="<?php echo base_url() . "master_customer/customer"; ?>" class="btn btn-falcon-primary btn-sm">Batal</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                </form>
+
+                <?php include(APPPATH . 'views/app/main-footer.php'); ?>
+            </div>
+        </div>
+    </main>
+    <!-- ===============================================-->
+    <!--    End of Main Content-->
+    <!-- ===============================================-->
+
+    <!-- ===============================================-->
+    <!--    JavaScripts-->
+    <!-- ===============================================-->
+    <?php include(APPPATH . 'views/app/main-js.php'); ?>
+    <script>
+        $(document).ready(function () {
+            getKota()
+        })
+
+        function getKota() {
+            $('#id_kota').html('')
+
+            const datapropinsi = "id_propinsi=" + $('#id_propinsi').val();
+            let options = ''
+            $.ajax({
+                type: "POST",
+                url: "<?php echo base_url(); ?>master_kota/kota_by_propinsi",
+                data: datapropinsi,
+                success: function(data) {
+                    data.forEach(element => {
+                        options += `<option value="${element.id_kota}">${element.nama_kota}</option>`
+                    });
+
+                    $('#id_kota').html(options)
+                }
+            });
+        }
+
+        $('#id_propinsi').change(function () {
+            getKota()
+        })
+    </script>
+</body>
+
+</html>

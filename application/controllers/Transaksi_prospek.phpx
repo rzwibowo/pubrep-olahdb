@@ -1,0 +1,92 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+class Transaksi_prospek extends CI_Controller
+{
+	function prospek()
+	{
+		cek_session_admin();
+		$data_customer = $this->db->query("SELECT bb.*, nama_kota, id_penawaran, tgl_penawaran
+                                FROM tbl_penawaran aa
+                                LEFT JOIN tbl_customer bb 
+                                    ON aa.id_customer = bb.id_customer               
+								LEFT JOIN tbl_kota cc 
+                                    ON bb.id_kabupaten = cc.id_kota
+                                WHERE status_penawaran = 'Y'
+                                    AND status_customer = 'Y'
+                                    AND kesimpulan_penawaran = 'potensial'")->result();
+
+		$data = array('customer' => $data_customer);
+
+		$this->load->view('app/mod_transaksi_prospek/prospek', $data);
+	}
+
+
+	function cari_ajax()
+	{
+		$cari        	= $this->input->post('cari');
+		$data = $this->db->query("SELECT l.nama_level, o.*
+                                FROM tbl_operator o
+								LEFT JOIN tbl_level l ON o.id_level = l.id_level                               
+                                WHERE o.status_operator = 'Y' 
+								AND o.nama_operator like '%" . $cari . "%'
+								ORDER BY o.nama_operator ASC");
+		$data = array('operator' => $data);
+		$this->load->view('app/mod_operator/cari_ajax', $data);
+	}
+
+	function penawaran_tambah()
+	{
+		cek_session_admin();
+		$tanggal    = date('Y-m-d H:i:s');
+		$data = array(
+			'id_customer' => $this->input->post('id_customer'),
+			'media_penawaran' => $this->input->post('media_penawaran'),
+			'id_alasan' => $this->input->post('id_alasan'),
+			'keterangan_penawaran' => $this->input->post('keterangan_penawaran'),
+			'kesimpulan_penawaran' => $this->input->post('kesimpulan_penawaran'),
+			'tgl_penawaran' => $tanggal
+		);
+		$insert = $this->db->insert('tbl_penawaran', $data);
+
+		if ($insert) {
+			redirect('transaksi_penawaran/penawaran');
+		} else {
+			// $data_result->status = 'save-err';
+		}
+	}
+
+	function customer_edit()
+	{
+		cek_session_admin();
+		$id = $this->uri->segment(3);
+		if (isset($_POST['submit_customer'])) {
+			$data = array(
+				'nama_customer' => $this->input->post('nama_customer'),
+				'telp_customer' => $this->input->post('telp_customer'),
+				'alamat_customer' => $this->input->post('alamat_customer'),
+				'id_propinsi' => $this->input->post('id_propinsi'),
+				'id_kabupaten' => $this->input->post('id_kota'),
+			);
+			$where = array('id_customer' => $this->input->post('id_customer'));
+			$this->model_app->update('tbl_customer', $data, $where);
+			redirect('master_customer/customer');
+		} else {
+			$qry  = $this->model_app->edit('tbl_customer', array('id_customer' => $id))->row_array();
+			$qry_propinsi = $this->model_app->view_where_asc(
+				'tbl_propinsi',
+				array('status_propinsi' => 'Y'),
+				'nama_propinsi'
+			);
+			$data = array('customer' => $qry, 'propinsi' => $qry_propinsi);
+			$this->load->view('app/mod_customer/customer_edit', $data);
+		}
+	}
+
+	function customer_hapus()
+	{
+		$id    = $this->input->post('id_customer');
+		$where = array('id_customer' => $id);
+		$data  = array('status_customer' => 'N');
+		$this->model_app->update('tbl_customer', $data, $where);
+	}
+}
